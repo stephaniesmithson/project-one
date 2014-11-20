@@ -1,0 +1,456 @@
+package Bank;
+
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
+import static javax.swing.JFrame.setDefaultLookAndFeelDecorated;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+/**
+ * @author Stephanie Smithson
+ 
+ * This class will create the Graphical User Interface for my program
+ */
+
+public class GUI extends JFrame {
+    
+    /**
+     * This will run the entire program
+     
+     * @param args Arguments -null-
+     */
+    public static void main(String[] args) {
+        GUI gui = new GUI();
+        gui.run();
+    }
+    
+    
+    /**
+     * This is the first JFrame that gives the user options for the program
+     
+     * They can either register, login, or cancel out of the program
+      
+     * This method is the base and links to all of the other methods in the program
+     */
+    public void run() {
+        setSize(220, 220);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setDefaultLookAndFeelDecorated(true);
+
+        setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        
+        setTitle("Login");
+        
+        JButton one = new JButton("Login");
+        JButton two = new JButton("New User");
+        JButton three = new JButton("Quit");
+        JButton test = new JButton("Test Account Creator");
+        
+        JButton space = new JButton("space");
+        //space.setVisible(false);
+        space.setEnabled(false);
+        
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 0;
+        add(one, c);
+        
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridy = 1;
+        add(two, c);
+        
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridy = 2;
+        add(three, c);
+        
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridy = 3;
+        add(test, c);
+
+        one.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                goToLogin();
+            }
+        });
+        
+        two.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                newUser();                   
+            }
+        });
+
+        three.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                cancel();
+            }
+        });
+        
+        test.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                User u = new User("Testing", "Testing");
+                createAccount(u);
+            }
+        });
+        setVisible(true);
+    }
+    
+    /**
+     * This method will open the JFrame for the user to enter their username and password
+     */
+    public void goToLogin() {
+        getContentPane().removeAll();
+        getContentPane().repaint();
+        
+        setTitle("Login");
+        
+        GridBagConstraints c = new GridBagConstraints();
+        
+        JLabel userField = new JLabel("Username: ");
+        final JTextField username = new JTextField(10);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 1;
+        add(userField, c);
+        c.gridx = 2;
+        add(username, c);
+
+        userField.requestFocusInWindow();
+        
+        JLabel passField = new JLabel("Password: ");
+        final JPasswordField password = new JPasswordField(10);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 2;
+        add(passField, c);
+        c.gridx = 2;
+        add(password, c);
+        
+        JButton back = new JButton("Back");
+        c.anchor = GridBagConstraints.NORTHWEST;
+        c.gridx = 0;
+        c.gridy = 0;
+        add(back, c);
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getContentPane().removeAll();
+                getContentPane().repaint();
+                run();
+            }
+        });
+        
+        final JButton confirm = new JButton("Ok");
+        
+        getRootPane().setDefaultButton(confirm);
+        
+        confirm.addActionListener(new ActionListener() {
+            fileManager fm = new fileManager();
+            
+            public void actionPerformed(ActionEvent e) {
+                if(username.getText().equals("") || username.getText().length() > 12) {
+                    JOptionPane.showMessageDialog(null, "Username must be 6-12 characters.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(username.getText().contains(" ")) {
+                    JOptionPane.showMessageDialog(null, "Username cannot contain spaces.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(password.getText().equals("") || password.getText().length() > 12) {
+                    JOptionPane.showMessageDialog(null, "Password must be 6-12 characters.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    User u = new User(username.getText(), password.getText());
+                    try {
+                        if(fm.containsUser(u.getUsername(), u.getPassword())) {
+                            //enterAccount(u);
+                            //fm.printFile();
+                        }
+                        else JOptionPane.showMessageDialog(null, "Username/Password not recognized.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        
+        addKeyListener(new KeyAdapter() {
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    confirm.doClick();
+                }
+            }
+        });
+
+        c.fill = GridBagConstraints.NONE;
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 2;
+        c.gridy = 5;
+        add(confirm, c);
+
+        setSize(280, 150);
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+    
+    /**
+     * This method will create the JFrame for the New User
+     
+     * They will enter their email, username, password
+     */
+    public void newUser() {
+        getContentPane().removeAll();
+        getContentPane().repaint();
+        
+        //File bankFile = new File("/bankFile.txt");
+        
+        //final Bank bank = new Bank();
+        //final User[] currentUsers;
+        
+        
+        setTitle("New User");
+        
+        GridBagConstraints c = new GridBagConstraints();
+                
+        JButton back = new JButton("Back");
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.NONE;
+        c.gridx = 0;
+        c.gridy = 1;
+        add(back, c);
+        back.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                getContentPane().removeAll();
+                getContentPane().repaint();
+                run();
+            }
+        });
+        
+        JLabel emailField = new JLabel("Email:      ");
+        JTextField email = new JTextField(10);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.CENTER;
+        c.gridx = 1;
+        c.gridy = 2;
+        add(emailField, c);
+        c.gridx = 2;
+        add(email, c);
+        
+        JLabel userField = new JLabel("Username:");
+        final JTextField username = new JTextField(10);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 3;
+        add(userField, c);
+        c.gridx = 2;
+        add(username, c);
+        
+        userField.requestFocusInWindow();
+
+        JLabel passField = new JLabel("Password:");
+        final JPasswordField password = new JPasswordField(10);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 4;
+        add(passField, c);
+        c.gridx = 2;
+        add(password, c);
+        
+        JLabel confirmPassField = new JLabel("Confirm password:   ");
+        final JPasswordField confirmPassword = new JPasswordField(10);
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 1;
+        c.gridy = 5;
+        add(confirmPassField, c);
+        c.gridx = 2;
+        add(confirmPassword, c);
+        
+        final JButton confirm = new JButton("Ok");
+        
+        getRootPane().setDefaultButton(confirm);
+        
+        confirm.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fileManager fm = new fileManager();
+                
+                if(username.getText().equals("") || username.getText().length() < 6 || username.getText().length() > 12) {
+                    JOptionPane.showMessageDialog(null, "Username must be 6-12 characters.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(username.getText().contains(" ")) {
+                    JOptionPane.showMessageDialog(null, "Username cannot contain spaces.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(password.getText().contains(" ") || confirmPassword.getText().contains(" ")) { 
+                    JOptionPane.showMessageDialog(null, "Password cannot contain spaces.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(password.getText().equals("") || password.getText().length() < 6 || password.getText().length() > 12) {
+                    JOptionPane.showMessageDialog(null, "Password must be 6-12 characters.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(!password.getText().equals(confirmPassword.getText())) {
+                    JOptionPane.showMessageDialog(null, "Passwords do not match.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else try {
+                    if(fm.containsUser(username.getText(), password.getText())) {
+                        User u = new User(username.getText(), password.getText());
+                        //enterAccount(u);
+                        fm.printFile();
+                    }
+                    else if(fm.containsUsername(username.getText())) {
+                        JOptionPane.showMessageDialog(null, "Username already in use.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                    }
+                    else {
+                        User u = new User(username.getText(), password.getText());
+                        fm.add(username.getText(), password.getText());
+                        createAccount(u);
+                        //fm.printFile();
+                    }
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }); 
+        c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.NONE;
+        c.gridx = 2;
+        c.gridy = 6;
+        add(confirm, c); 
+        
+        setSize(330,190);
+        setLocationRelativeTo(null);
+        setVisible(true);
+    }
+    
+    /**                     -- UNDER CONSTRUCTION --
+     * This method will be called only when a new User creates their account
+     * It will prompt them for the amount of money in their account and append
+     * that to their saved data
+     
+     * @param user The User whose account will be created here
+     */
+    public void createAccount(final User user) {
+        getContentPane().removeAll();
+        getContentPane().repaint();
+        
+        setSize(300, 150);
+        setTitle(user.getUsername().substring(0, 1).toUpperCase() + user.getUsername().substring(1, user.getUsername().length()).toLowerCase() + "'s Account");
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        
+        setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        
+        JLabel welcome = new JLabel("Welcome to the Online Bank!");
+        c.gridx = 0;
+        c.gridy = 0;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.ipady = 20;
+        c.ipadx = 20;
+        add(welcome, c);
+        
+        JLabel enterAmount = new JLabel("Please enter your current balance:  $");
+        c.gridx = 0;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.ipadx = 0;
+        c.ipady = 0;
+        add(enterAmount, c);
+        
+        final JTextField amount = new JTextField(5);
+        c.gridx = 1;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.EAST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(amount, c);
+        
+        JButton confirm = new JButton("Ok");
+        
+        getRootPane().setDefaultButton(confirm);
+        
+        confirm.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                fileManager fm = new fileManager();
+                
+                if(amount.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Field cannot be left empty.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(!amount.getText().matches("[0-9]+")) {
+                    JOptionPane.showMessageDialog(null, "Your balance cannot contain letters.", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    BankAccount ba = new BankAccount(user, Double.parseDouble(amount.getText()));
+                    enterAccount(ba);
+                    
+                    try {
+                        fm.addAmountToUser(user, Double.parseDouble(amount.getText()));
+                        fm.printFile();
+                    } catch (FileNotFoundException ex) {
+                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        c.gridx = 0;
+        c.gridy = 2;
+        c.anchor = GridBagConstraints.CENTER;
+        c.fill = GridBagConstraints.NONE + 5;
+        c.weighty = 1;
+        add(confirm, c);
+    }
+    
+    
+    /**                     -- UNDER CONSTRUCTION --
+     * This method will be called after a User with a BankAccount logs in
+     * It will also be called after a new User creates their account
+  
+     * @param ba The BankAccount that will be entered
+     */
+    public void enterAccount(BankAccount ba) {
+        getContentPane().removeAll();
+        getContentPane().repaint();
+        
+        User user = ba.getUser();
+        
+        setSize(400, 450);
+        setTitle(user.getUsername().substring(0, 1).toUpperCase() + user.getUsername().substring(1, user.getUsername().length()).toLowerCase() + "'s Account");
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        
+        setLayout(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        
+        System.out.println(ba);
+    }
+    
+    /**
+     * A method that cancels the program and shuts down the GUI
+     */
+    public void cancel() {
+        System.exit(0);
+    }
+}
