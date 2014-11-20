@@ -1,0 +1,210 @@
+package Bank;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+
+/**
+ * @author Stephanie Smithson
+ 
+ * This class is my file manager. It gets the file from my project path
+ * and edits it accurately based on the User's information
+ 
+ * When sent to executable jar --> CHANGE FILE PATH --> ("/bankFile.txt");
+ 
+ * NOTE: If you want to run this on a different IDE and want to access the text
+ * file from your desktop, change the file's path to:
+ * ("C://Users:// YOUR USERNAME FOR YOUR COMPUTER //Desktop//bankFile.txt");
+ 
+ * If you do not change the file path with a different IDE you will get a FileNotFound error!
+ */
+
+public class fileManager {
+
+    File file;
+    ArrayList<String> contents;
+
+    /**
+     * A tester for this class from when it was being created
+     * I will keep this here as I keep adding to this class and remove it once
+     * I finish editing it
+     
+     * @param args
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        fileManager f = new fileManager();
+        f.readFile();
+        
+        if(!f.containsUser("Stephanie", "Smithson")) f.add("Stephanie", "Smithson");
+        if(!f.containsUser("Marissa", "Password")) f.add("Marissa", "Password");
+        
+        String[] names = JOptionPane.showInputDialog(null, "What is your username and password?").split(" ");
+        f.add(names[0], names[1]);
+        
+        f.printFile();
+    }
+
+    /**
+     * The only default constructor that gets the file from the object path
+     * Instantiates the File
+     */
+    public fileManager() {
+        file = new File("bankFile.txt");
+    }
+    
+    /**
+     * A void method that adds the new User to the file
+     * They are separated with a '.' to keep the data separate
+     
+     * @param u     The User's username
+     * @param p     The User's password
+     * 
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public void add(String u, String p) throws FileNotFoundException, IOException {
+        PrintWriter print = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+        print.print("\n" + u + "." + p);
+        print.close();
+    }
+    
+    /**
+     * A method that lets a User put a value to their BankAccount
+     * And then appends it to the User's data sequence
+     
+     * @param user  The User
+     * @param amount    The amount of money in the User's BankAccount
+     */
+    public void addAmountToUser(User user, Double amount) {
+        String line = "";
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((line = reader.readLine()) != null) {
+                if(line.equals(user.getUsername() + "." + user.getPassword())) {
+                    PrintWriter print = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+                    print.print("./" + amount);
+                    print.close();
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * A method that returns the BankAccount of the User 
+     * when given the User (gets the amount)
+     
+     * @param u The User
+     * @return the User's BankAccount
+     */
+    public BankAccount getAccount(User u) {
+        String name = u.getUsername();
+        String pass = u.getPassword();
+        double amount = 0;
+        int n = 0;
+        
+        String line = "";
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((line = reader.readLine()) != null) {
+                if(line.contains(name + "." + pass + "./"))
+                    n = line.indexOf("/");
+                    amount = Double.parseDouble(line.substring(n, line.length()));
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        BankAccount ba = new BankAccount(u, amount);
+        return ba;
+    }
+
+    /**
+     * A method that checks to see if the file already contains the User
+     
+     * @param username  The User's username
+     * @param password  The User's password
+     * @return  boolean
+     * @throws FileNotFoundException 
+     */
+    public boolean containsUser(String username, String password) throws FileNotFoundException {
+        String line = "";
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((line = reader.readLine()) != null) {
+                if(line.equals(username + "." + password)) return true;
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    /**
+     * A method that checks to see if the file already contains the User's username
+     
+     * @param username  The username that the User has chosen
+     * @return  boolean
+     * @throws FileNotFoundException 
+     */
+    public boolean containsUsername(String username) throws FileNotFoundException {
+        String line = "";
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((line = reader.readLine()) != null) {
+                int lu = username.length();
+                if(line.substring(0, lu).equals(username)) return true;
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    /**
+     * A method to print out the bankFile.txt to the console
+      
+     * @throws FileNotFoundException
+     */
+    public void printFile() throws FileNotFoundException {
+        readFile();
+        
+        for(String s : contents) {
+            System.out.println(s);
+        }
+    }
+
+    /**
+     * A method that reads in the bankFile.txt from the project path
+      
+     * @throws FileNotFoundException 
+     */
+    public void readFile() throws FileNotFoundException {
+        contents = new ArrayList<>();
+        String content = null;
+        
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((content = reader.readLine()) != null) {
+                contents.add(content);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
