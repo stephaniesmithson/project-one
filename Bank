@@ -1,0 +1,73 @@
+package Bank;
+
+import java.util.HashSet;
+import java.util.Set;
+
+/**
+ * @author Stephanie Smithson
+ 
+ * This class will create a set of BankAccounts for a Bank
+ */
+
+public class Bank {
+
+    private Set<BankAccount> bank;
+
+    /**
+     * A constructor for the Bank
+     * 
+     * This method call creates a new Map to store BankAccounts
+     */
+    public Bank() {
+        bank = new HashSet<>();
+    }
+
+    /**
+     * A method to add a BankAccount to the Bank
+     * 
+     * @param a The BankAccount to be added
+     */
+    public void addToSystem(BankAccount a) {
+        bank.add(a);
+    }
+
+    /**
+     * A method to remove a BankAccount from the Bank
+     * 
+     * @param a The BankAccount to be removed
+     */
+    public void removeFromSystem(BankAccount a) {
+        bank.remove(a.getUser());
+    }
+    
+    /**
+     * A method that returns a list of all the BankAccounts in the Bank
+     * 
+     * @return A list of BankAccounts
+     */
+    public String listAccounts() {
+        String str = "";
+                
+        for (BankAccount account : bank) {
+            str += account + "\n";
+        }
+
+        return str;
+        
+    }
+
+    /**
+     * A method that returns a list of all the Users with BankAccounts in the Bank
+     * 
+     * @return A list of Users
+     */
+    public String listUsers() {
+        String str = "";
+
+        for (BankAccount account : bank) {
+            str += account.getUser().toString() + "\n";
+        }
+
+        return str;
+    }
+}
