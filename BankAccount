@@ -1,0 +1,86 @@
+package Bank;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author Stephanie Smithson
+ 
+ * This class will create a BankAccount Object with a User and a balance
+ */
+public class BankAccount {
+
+    private User user;
+    private double balance;
+
+    /**
+     * A constructor for a BankAccount Object
+     * 
+     * @param u The User of the BankAccount
+     * @param a The amount of money in the BankAccount
+     */
+    public BankAccount(User u, double a) {
+        user = u;
+        balance = a;
+    }
+
+    /**
+     * Returns the User that owns the BankAccount
+     * 
+     * @return user
+     */
+    public User getUser() {
+        return user;
+    }
+
+    /**
+     * Returns the amount of money in the BankAccount
+     * 
+     * @return balance
+     */
+    public double getBalance() {
+        return balance;
+    }
+
+    /**
+     * A method that allows the User to add money to their BankAccount
+     * 
+     * @param d The amount of money the User would like to add
+     */
+    public void deposit(double d) {
+        balance += d;
+    }
+
+    /**
+     * A method that allows the User to withdraw money from their BankAccount
+     * 
+     * @param w The amount of money the User would like to take out
+     */
+    public void withdraw(double w) {
+        balance -= w;
+    }
+
+    /**                     ---METHOD IN PROGRESS---
+     * A method that allows for one User to transfer a certain amount of money
+     * from their BankAccount to another User's BankAccount
+     * 
+     * @param amount The amount that the User would like to transfer
+     * @param user2 The other User's username that the User would like to transfer the money to
+     
+    public void transfer(double amount, String user2) {
+        balance -= amount; 
+        * // ACCESS BANK SET
+        new BankAccount(user2, amount);
+    }
+   */
+    
+    /**
+     * Returns a String representation of the BankAccount
+     * 
+     * @return The username, password, and balance of the BankAccount
+     */
+    public String toString() {
+        return "[Username: " + user.getUsername() + ", Password: " +
+                user.getPassword() + ", Balance: " + getBalance() + "]";
+    }
+}
