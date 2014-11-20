@@ -1,0 +1,71 @@
+package Bank;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * @author Stephanie Smithson
+
+ * This class will create a User object with a username and password
+ * This Object will be able to have a BankAccount <User, Double>
+ */
+public class User {
+
+    private String username, password;
+
+    /**
+     * A constructor for a User
+     * 
+     * @param username  The user's username
+     * @param password  The user's password
+     */
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    /**
+     * A method to return the username of the User
+     * 
+     * @return username
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * A method to access the password of the User
+     * 
+     * @return password
+     */
+    public String getPassword() {
+        return password;
+    }
+
+    /**
+     * A method to change the User's username
+     * 
+     * @param newUsername the new username for the User
+     */
+    public void changeUsername(String newUsername) {
+        username = newUsername;
+    }
+
+    /**
+     * A method to change the User's password
+     * 
+     * @param newPassword the new password for the User
+     */
+    public void changePass(String newPassword) {
+        password = newPassword;
+    }
+    
+    /**
+     * A method to return a String representation of the User
+     * 
+     * @return prints the username and password to the console
+     */
+    public String toString() {
+        return "[Username: " + getUsername() + ", Password: " + getPassword() + "]";
+    }
+}
