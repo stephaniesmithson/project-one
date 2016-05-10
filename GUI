@@ -1,5 +1,4 @@
-package Bank;
-
+import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -8,9 +7,12 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import static javax.swing.JFrame.setDefaultLookAndFeelDecorated;
@@ -29,7 +31,7 @@ public class GUI extends JFrame {
     
     /**
      * This will run the entire program
-     
+     * 
      * @param args Arguments -null-
      */
     public static void main(String[] args) {
@@ -40,13 +42,13 @@ public class GUI extends JFrame {
     
     /**
      * This is the first JFrame that gives the user options for the program
-     
+     * 
      * They can either register, login, or cancel out of the program
-      
+     * 
      * This method is the base and links to all of the other methods in the program
      */
     public void run() {
-        setSize(220, 220);
+        setSize(220, 200);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setDefaultLookAndFeelDecorated(true);
@@ -59,7 +61,7 @@ public class GUI extends JFrame {
         JButton one = new JButton("Login");
         JButton two = new JButton("New User");
         JButton three = new JButton("Quit");
-        JButton test = new JButton("Test Account Creator");
+        JButton test = new JButton("Test Transfer");
         
         JButton space = new JButton("space");
         //space.setVisible(false);
@@ -77,11 +79,7 @@ public class GUI extends JFrame {
         c.fill = GridBagConstraints.HORIZONTAL;
         c.gridy = 2;
         add(three, c);
-        
-        c.fill = GridBagConstraints.HORIZONTAL;
-        c.gridy = 3;
-        add(test, c);
-
+       
         one.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 goToLogin();
@@ -100,12 +98,6 @@ public class GUI extends JFrame {
             }
         });
         
-        test.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                User u = new User("Testing", "Testing");
-                createAccount(u);
-            }
-        });
         setVisible(true);
     }
     
@@ -177,8 +169,10 @@ public class GUI extends JFrame {
                     User u = new User(username.getText(), password.getText());
                     try {
                         if(fm.containsUser(u.getUsername(), u.getPassword())) {
-                            //enterAccount(u);
-                            //fm.printFile();
+                            setVisible(false);
+                            BankAccount ba = fm.getAccount(u);
+                            System.out.println("Reached!");
+                            enterAccount(ba);
                         }
                         else JOptionPane.showMessageDialog(null, "Username/Password not recognized.", "Login Error",
                                     JOptionPane.ERROR_MESSAGE);
@@ -189,6 +183,9 @@ public class GUI extends JFrame {
             }
         });
         
+        /**
+         * Pressing enter automatically triggers the confirm JButton
+         */
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -210,7 +207,7 @@ public class GUI extends JFrame {
     
     /**
      * This method will create the JFrame for the New User
-     
+     * 
      * They will enter their email, username, password
      */
     public void newUser() {
@@ -311,8 +308,9 @@ public class GUI extends JFrame {
                 else try {
                     if(fm.containsUser(username.getText(), password.getText())) {
                         User u = new User(username.getText(), password.getText());
-                        //enterAccount(u);
-                        fm.printFile();
+                        BankAccount ba = fm.getAccount(u);
+                        setVisible(false);
+                        enterAccount(ba);
                     }
                     else if(fm.containsUsername(username.getText())) {
                         JOptionPane.showMessageDialog(null, "Username already in use.", "Login Error",
@@ -322,7 +320,6 @@ public class GUI extends JFrame {
                         User u = new User(username.getText(), password.getText());
                         fm.add(username.getText(), password.getText());
                         createAccount(u);
-                        //fm.printFile();
                     }
                 } catch (FileNotFoundException ex) {
                     Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -342,13 +339,6 @@ public class GUI extends JFrame {
         setVisible(true);
     }
     
-    /**                     -- UNDER CONSTRUCTION --
-     * This method will be called only when a new User creates their account
-     * It will prompt them for the amount of money in their account and append
-     * that to their saved data
-     
-     * @param user The User whose account will be created here
-     */
     public void createAccount(final User user) {
         getContentPane().removeAll();
         getContentPane().repaint();
@@ -357,6 +347,7 @@ public class GUI extends JFrame {
         setTitle(user.getUsername().substring(0, 1).toUpperCase() + user.getUsername().substring(1, user.getUsername().length()).toLowerCase() + "'s Account");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
         
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -379,12 +370,26 @@ public class GUI extends JFrame {
         c.ipady = 0;
         add(enterAmount, c);
         
-        final JTextField amount = new JTextField(5);
+        final JTextField amount = new JTextField(2);
         c.gridx = 1;
         c.gridy = 1;
         c.anchor = GridBagConstraints.EAST;
         c.fill = GridBagConstraints.HORIZONTAL;
         add(amount, c);
+        
+        final JLabel point = new JLabel(".");
+        c.gridx = 2;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(point, c);
+        
+        final JTextField decimal = new JTextField(2); 
+        c.gridx = 3;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(decimal, c);
         
         JButton confirm = new JButton("Ok");
         
@@ -392,9 +397,18 @@ public class GUI extends JFrame {
         
         confirm.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                fileManager fm = new fileManager();
                 
-                if(amount.getText().isEmpty()) {
+                final String total = amount.getText() + "." + decimal.getText();
+                System.out.println(total);
+                
+                fileManager fm = new fileManager();
+                DecimalFormat df = new DecimalFormat("00000000.00");    //significant figures? LOL might as well keep it like this
+                
+                if(decimal.getText().length() > 2) {
+                     JOptionPane.showMessageDialog(null, "Number after decimal may not exceed two characters..", "Login Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(amount.getText().isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Field cannot be left empty.", "Login Error",
                                     JOptionPane.ERROR_MESSAGE);
                 }
@@ -403,7 +417,7 @@ public class GUI extends JFrame {
                                     JOptionPane.ERROR_MESSAGE);
                 }
                 else {
-                    BankAccount ba = new BankAccount(user, Double.parseDouble(amount.getText()));
+                    BankAccount ba = new BankAccount(user, Double.parseDouble(total));
                     enterAccount(ba);
                     
                     try {
@@ -423,28 +437,250 @@ public class GUI extends JFrame {
         add(confirm, c);
     }
     
-    
-    /**                     -- UNDER CONSTRUCTION --
-     * This method will be called after a User with a BankAccount logs in
-     * It will also be called after a new User creates their account
-  
-     * @param ba The BankAccount that will be entered
-     */
-    public void enterAccount(BankAccount ba) {
+    public void enterAccount(final BankAccount ba) {
         getContentPane().removeAll();
         getContentPane().repaint();
         
         User user = ba.getUser();
         
-        setSize(400, 450);
+        setSize(250, 200);
         setTitle(user.getUsername().substring(0, 1).toUpperCase() + user.getUsername().substring(1, user.getUsername().length()).toLowerCase() + "'s Account");
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setVisible(true);
         
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         
-        System.out.println(ba);
+        JLabel balanceLabel = new JLabel("Balance  $");
+        c.anchor = GridBagConstraints.WEST;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.gridx = 0;
+        c.gridy = 0;
+        add(balanceLabel, c);     
+        
+        final JTextField balanceF = new JTextField(5);
+        balanceF.setText("" + ba.getBalance());
+        balanceF.setEditable(false);
+        c.gridx = 2;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        add(balanceF);
+        
+        JButton depositButton = new JButton("Deposit");
+        depositButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                double amount = 0;
+                String deposit = JOptionPane.showInputDialog(null, "How much money would you like to deposit?");
+                if(!deposit.matches("[0-9]+")) {
+                    JOptionPane.showMessageDialog(null, "Your deposit cannot contain letters.", "Deposit Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else amount = Double.parseDouble(deposit);
+                
+                if(amount < 0) {
+                    JOptionPane.showMessageDialog(null, "You cannot deposit a negative number.", "Deposit Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if(amount > 1000) {
+                    JOptionPane.showMessageDialog(null, "Your deposit cannot exceed $1000.", "Deposit Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    ba.deposit(amount);
+                    balanceF.setText("" + ba.getBalance());
+                    fileManager fm = new fileManager();
+                    
+                    try {
+                        fm.updateBalance(ba, ba.getBalance());
+                        for(int clear = 0; clear < 20; clear++) {
+                           System.out.println("\b") ;
+                        }
+                        fm.printFile();
+                    } catch (IOException ex) {
+                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        c.insets.top = 10;
+        c.gridx = 1;
+        c.gridy = 1;
+        c.anchor = GridBagConstraints.CENTER;
+        add(depositButton, c);
+        
+        JButton withdrawButton = new JButton("Withdraw");
+        withdrawButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                double amount = 0;
+                String withdrawal = JOptionPane.showInputDialog(null, "How much money would you like to withdraw?");
+                if(!withdrawal.matches("[0-9]+")) {
+                    JOptionPane.showMessageDialog(null, "Your withdrawal cannot contain letters.", "Withdrawal Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else amount = Double.parseDouble(withdrawal);
+                
+                if(amount < 0) {
+                    JOptionPane.showMessageDialog(null, "You cannot withdraw a negative number.", "Withdrawal Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else if (amount > ba.getBalance()) {
+                    JOptionPane.showMessageDialog(null, "Your withdrawal cannot be larger than your balance.", "Withdrawal Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    ba.withdraw(amount);
+                    balanceF.setText("" + ba.getBalance());
+                    fileManager fm = new fileManager();
+                    
+                    try {
+                        fm.updateBalance(ba, ba.getBalance());
+                        for(int clear = 0; clear < 20; clear++) {
+                           System.out.println("\b") ;
+                        }
+                        fm.printFile();
+                    } catch (IOException ex) {
+                        Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        });
+        c.gridy = 2;
+        c.anchor = GridBagConstraints.CENTER;
+        add(withdrawButton, c);
+        
+        JButton transferButton = new JButton("Transfer");
+        transferButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                for(int clear = 0; clear < 20; clear++) {
+                    System.out.println("\b") ;
+                }
+                final JFrame transfer = new JFrame();
+                transfer.setSize(440, 150);
+                transfer.setLocationRelativeTo(null);
+                transfer.setTitle("-Transfer-");
+                transfer.setVisible(true);
+                transfer.setLayout(new GridBagLayout());
+                GridBagConstraints c = new GridBagConstraints();
+                
+                fileManager fm = new fileManager();
+                
+                ArrayList<String> usernames = new ArrayList<>();               
+                try {
+                    usernames = fm.listUsernames();
+                } catch (FileNotFoundException ex) {
+                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                final JLabel chooseUser = new JLabel("Account to transfer money to: ");
+                c.gridx = 0;
+                c.gridy = 0;
+                transfer.add(chooseUser, c);
+                
+                String[] array = new String[usernames.size()];
+                array[0] = "- Choose Account -";
+                for(int i = 1; i < array.length; i++) {
+                    if(!usernames.get(i).equals(ba.getUser().getUsername())) {
+                        array[i] = usernames.get(i);
+                    }
+                    else i--;
+                }
+                
+                final JComboBox users = new JComboBox(array);
+                c.gridx = 1;
+                c.gridy = 0;
+                transfer.add(users, c);
+                
+                JLabel chooseAmount = new JLabel("How much money would you like to transfer? $");
+                c.insets.top = 4;
+                c.gridx = 0;
+                c.gridy = 1;
+                transfer.add(chooseAmount, c);
+                
+                final JTextField amountToTransfer = new JTextField(5);
+                c.gridx = 1;
+                transfer.add(amountToTransfer, c);
+                
+                JButton confirm = new JButton("Ok");
+                confirm.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        String transferee = String.valueOf(users.getSelectedItem());
+                        //Double amount = Double.parseDouble(amountToTransfer.getText());
+                        if(transferee.equals("- Choose Account -")) {
+                            JOptionPane.showMessageDialog(null, "You must select an account.", "Transfer Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        else if(amountToTransfer.getText().equals("")) {
+                            JOptionPane.showMessageDialog(null, "You must input a transfer amount.", "Transfer Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        else if(!amountToTransfer.getText().replace(".", "").matches("[0-9]+")) {
+                            JOptionPane.showMessageDialog(null, "Your transfer cannot contain letters.", "Transfer Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        final double amount = Double.parseDouble(amountToTransfer.getText());
+                        if(amount > ba.getBalance()) {
+                            JOptionPane.showMessageDialog(null, "Your transfer cannot be greater than your balance.", "Transfer Error",
+                                    JOptionPane.ERROR_MESSAGE);    
+                        }
+                        else if(amount < 0) {
+                            JOptionPane.showMessageDialog(null, "Your transfer cannot be a negative number.", "Transfer Error",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        else {
+                            int reply = JOptionPane.showConfirmDialog(null, "Are you sure you would like to complete this transfer?", "Confirm Transfer", JOptionPane.YES_NO_OPTION);                      
+                            if(reply == JOptionPane.YES_OPTION) {
+                                fileManager fm = new fileManager();
+                                
+                                try {
+                                    fm.transferTo(ba, transferee, amount);
+                                } catch (IOException ex) {
+                                    Logger.getLogger(GUI.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                               
+                                balanceF.setText("" + ba.getBalance());
+                                
+                                System.out.println("TRANSFER COMPLETED");
+                                transfer.setVisible(false);
+                            }   
+                        }
+                    }
+                });
+                c.gridx = 0;
+                c.fill = GridBagConstraints.RELATIVE;
+                c.gridy = 2;
+                c.anchor = GridBagConstraints.CENTER;
+                confirm.setVisible(true);
+                transfer.add(confirm, c);
+                
+                JButton cancel = new JButton("Cancel");
+                cancel.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        transfer.setVisible(false);
+                    }
+                });
+                c.gridx = 0;
+                c.anchor = GridBagConstraints.EAST;
+                transfer.add(cancel, c);
+            }
+        });
+        c.gridy = 3;
+        add(transferButton, c);
+        
+        JButton logout = new JButton("Logout");
+        logout.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int reply = JOptionPane.showConfirmDialog(null, "You are about to log out of the systerm.", "Logout", JOptionPane.YES_NO_OPTION);                      
+                if(reply == JOptionPane.YES_OPTION) {
+                    getContentPane().removeAll();
+                    getContentPane().repaint();
+                    run();
+                }      
+            }
+        });
+        c.gridy = 4;
+        add(logout, c);
+        
+        setResizable(false);
     }
     
     /**
@@ -452,5 +688,9 @@ public class GUI extends JFrame {
      */
     public void cancel() {
         System.exit(0);
+    }
+    
+    private Object makeObj(final String item)  {
+        return new Object() { public String toString() { return item; } };
     }
 }
