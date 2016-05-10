@@ -1,12 +1,17 @@
 package Bank;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Stephanie Smithson
  
  * This class will create a set of BankAccounts for a Bank
+ 
+ * [note: I will eventually try to save the BankAccounts to a
+ *  file so that Users can save their data to the system]
  */
 
 public class Bank {
