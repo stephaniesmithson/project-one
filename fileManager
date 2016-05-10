@@ -1,5 +1,3 @@
-package Bank;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,7 +7,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import javax.swing.JOptionPane;
 
 /**
  * @author Stephanie Smithson
@@ -30,6 +27,7 @@ public class fileManager {
 
     File file;
     ArrayList<String> contents;
+    ArrayList<String> usernames;
 
     /**
      * A tester for this class from when it was being created
@@ -42,13 +40,12 @@ public class fileManager {
      */
     public static void main(String[] args) throws FileNotFoundException, IOException {
         fileManager f = new fileManager();
-        f.readFile();
+          
+        f.printFile();
         
-        if(!f.containsUser("Stephanie", "Smithson")) f.add("Stephanie", "Smithson");
-        if(!f.containsUser("Marissa", "Password")) f.add("Marissa", "Password");
-        
-        String[] names = JOptionPane.showInputDialog(null, "What is your username and password?").split(" ");
-        f.add(names[0], names[1]);
+        User u = new User("Stephanie", "Smithson");
+        BankAccount ba = new BankAccount(u, 100.0);
+        f.transferTo(ba, "Marissa", 20);
         
         f.printFile();
     }
@@ -59,6 +56,7 @@ public class fileManager {
      */
     public fileManager() {
         file = new File("bankFile.txt");
+        usernames = new ArrayList<>();
     }
     
     /**
@@ -73,7 +71,7 @@ public class fileManager {
      */
     public void add(String u, String p) throws FileNotFoundException, IOException {
         PrintWriter print = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
-        print.print("\n" + u + "." + p);
+        print.println(u + "." + p);
         print.close();
     }
     
@@ -101,6 +99,138 @@ public class fileManager {
         }
     }
     
+    
+    /**
+     * A method that allows for the user's balance to be updated in the system
+     * It creates a temporary file where it transfers existing data and replaces
+     * the old balance with the new balance back in the original file
+     * 
+     * @param ba    the BankAccount to be updated
+     * @param newBalance    the new balance for the BankAccount
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public void updateBalance(BankAccount ba, double newBalance) throws FileNotFoundException, IOException {
+        File temp = new File("temp.txt");
+        PrintWriter clearTemp = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
+        clearTemp.close();
+        
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line = "";
+        
+        PrintWriter print1 = new PrintWriter(new BufferedWriter(new FileWriter(temp, true)));
+        while((line = reader.readLine()) != null) {
+            print1.println(line);
+        }
+        print1.close();
+        
+        PrintWriter clear = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+        clear.close(); 
+        
+        BufferedReader tempReader = new BufferedReader(new FileReader(temp));
+        PrintWriter print = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+        String add = "";
+        
+        while((line = tempReader.readLine()) != null) {
+            if(line.contains(ba.getUser().getUsername() + ".")) {
+                add = ba.getUser().getUsername() + "." + ba.getUser().getPassword() + "./" + newBalance;
+            }
+            else add = line;
+            print.println(add);
+        }
+        print.close();
+    }
+    
+        /**
+     * A method that allows for the user's balance to be updated in the system
+     * It creates a temporary file where it transfers existing data and replaces
+     * the old balance with the new balance back in the original file
+     * 
+     * @param ba    the BankAccount to be updated
+     * @param newBalance    the new balance for the BankAccount
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public void transferTo(BankAccount ba, String username, double amount) throws FileNotFoundException, IOException {
+        File temp = new File("temp.txt");
+        PrintWriter clearTemp = new PrintWriter(new BufferedWriter(new FileWriter(temp)));
+        clearTemp.close();
+        
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line = "";
+        
+        PrintWriter print1 = new PrintWriter(new BufferedWriter(new FileWriter(temp, true)));
+        while((line = reader.readLine()) != null) {
+            print1.println(line);
+        }
+        print1.close();
+        
+        PrintWriter clear = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+        clear.close(); 
+        
+        BufferedReader tempReader = new BufferedReader(new FileReader(temp));
+        PrintWriter print = new PrintWriter(new BufferedWriter(new FileWriter(file, true)));
+        String add = "";
+        
+        while((line = tempReader.readLine()) != null) {
+            if(line.contains(ba.getUser().getUsername() + "." + ba.getUser().getPassword())) {
+                ba.withdraw(amount);
+                add = ba.getUser().getUsername() + "." + ba.getUser().getPassword() + "./" + ba.getBalance();
+            }
+            else if(line.contains(username + ".")) {
+                String[] splitUp = line.split("./");
+
+                String userInfo = splitUp[0];
+                String userB = splitUp[1];
+                
+                User u = new User(userInfo.substring(0, userInfo.indexOf(".")), userInfo.substring(userInfo.indexOf(".") + 1, userInfo.length()));
+
+                System.out.println(u.toString());
+                
+                BankAccount account = getAccount(u);
+
+                System.out.println("\n" + userB + "\n");
+
+                add = line.substring(0, line.indexOf("/")) + "/" + (Double.parseDouble(userB) + amount);
+            }
+            else add = line;
+            print.println(add);
+        }
+        print.close();
+    }
+    
+        /**
+     * A method that returns the BankAccount of the User 
+     * when given the username (gets the password and balance)
+     
+     * @param username  the username of the other User
+     * @return the User's BankAccount
+     */
+    public BankAccount getAccount(String username) {
+        double amount = 0;
+        int n = 0;
+        
+        String line = "";
+        String password = null;
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            while((line = reader.readLine()) != null) {
+                if(line.contains(username + ".")) {
+                    String[] splitUp = line.split("./");
+                    amount = Double.parseDouble(splitUp[1]);
+                    String[] userInfo = splitUp[0].split(".");
+                    
+                }
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        User u = new User(username, password);
+        BankAccount ba = new BankAccount(u, amount);
+        return ba;
+    }
+    
     /**
      * A method that returns the BankAccount of the User 
      * when given the User (gets the amount)
@@ -118,9 +248,10 @@ public class fileManager {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while((line = reader.readLine()) != null) {
-                if(line.contains(name + "." + pass + "./"))
-                    n = line.indexOf("/");
-                    amount = Double.parseDouble(line.substring(n, line.length()));
+                if(line.contains(name + "." + pass + "./")) {
+                    String[] splitUp = line.split("./");
+                    amount = Double.parseDouble(splitUp[1]);
+                }
             }
             reader.close();
         } catch (IOException e) {
@@ -144,7 +275,8 @@ public class fileManager {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while((line = reader.readLine()) != null) {
-                if(line.equals(username + "." + password)) return true;
+                String[] splitUp = line.split("./");
+                if(splitUp[0].equals(username + "." + password)) return true;
             }
             reader.close();
         } catch (IOException e) {
@@ -201,10 +333,17 @@ public class fileManager {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             while((content = reader.readLine()) != null) {
                 contents.add(content);
+                int i = content.indexOf(".");
+                usernames.add(content.substring(0, i));
             }
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    
+    public ArrayList<String> listUsernames() throws FileNotFoundException {
+        readFile();
+        return usernames;
     }
 }
